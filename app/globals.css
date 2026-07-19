@@ -446,8 +446,14 @@ footer {
   .hero-copy {
     padding-bottom: 0;
   }
+  /*
+    On mobile the hero collapses to one column and the photo is bottom-aligned;
+    a fixed min-height left a large empty gap above the (shorter) image. Let the
+    photo size to its content so it sits directly beneath the copy. Desktop
+    (>900px) keeps its original 620px min-height, unchanged.
+  */
   .hero-photo {
-    min-height: 430px;
+    min-height: auto;
   }
   .pastors {
     width: min(108%, 620px);
