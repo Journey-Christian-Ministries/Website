@@ -181,7 +181,7 @@ main {
   align-items: end;
   gap: 22px;
   padding: 16px clamp(22px, 6vw, 82px) 18px;
-  min-height: 690px;
+  min-height: 655px;
 }
 .hero-copy {
   padding-bottom: 34px;

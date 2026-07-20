@@ -35,9 +35,9 @@ export default function AboutPage() {
             Church of God in Christ (COGIC). We believe in teaching the Word of
             God in a way that is clear, practical, and applicable to everyday
             life. No matter where you are in life or on your spiritual journey,
-            you are welcome here. You do not have to have everything figured out
-            before coming to God. We believe God will meet you right where you
-            are and guide you forward.
+            you are welcome here. You don&rsquo;t need to have life all figured
+            out in order to take your next step in faith. We believe God will
+            meet you right where you are and guide you forward.
           </p>
 
           <h2 className="about-subhead">Serving Our Community</h2>
