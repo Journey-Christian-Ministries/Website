@@ -525,6 +525,42 @@ select:focus-visible,
   max-width: 680px;
   color: #26315f;
 }
+
+/* ---------- About page (text content; reuses site typography/colors) ---------- */
+.about {
+  max-width: 760px;
+  margin-top: 8px;
+}
+.about-subhead {
+  color: var(--deep);
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin: 32px 0 8px;
+  font-weight: 700;
+}
+.about p {
+  font-size: 1.08rem;
+  line-height: 1.82;
+  color: #2b335f;
+  margin: 0 0 18px;
+}
+.about p:last-child {
+  margin-bottom: 0;
+}
+.about .mission {
+  margin-top: 48px;
+  padding-top: 36px;
+  border-top: 1px solid rgba(45, 53, 199, 0.16);
+}
+.mission-title {
+  color: var(--deep);
+  font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin: 0 0 14px;
+  font-weight: 700;
+}
 .card {
   background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(45, 53, 199, 0.14);
