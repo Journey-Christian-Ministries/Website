@@ -24,8 +24,7 @@ export default function ContactPage() {
 
   return (
     <div className="page">
-      <div className="eyebrow">Contact</div>
-      <h1 className="page-title">Contact Journey</h1>
+      <h1 className="page-title">Contact Us</h1>
       <p className="lead">
         We&rsquo;d love to hear from you. Send us a message using the form below
         and a member of our team will respond soon. You can also visit us at{" "}

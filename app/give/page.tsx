@@ -15,11 +15,10 @@ export const metadata: Metadata = {
 export default function GivePage() {
   return (
     <div className="page">
-      <div className="eyebrow">Give</div>
       <h1 className="page-title">Give</h1>
       <p className="lead">
-        Thank you for supporting Journey Christian Ministries. Choose one of the
-        giving options below.
+        Thank you for supporting Journey Christian Ministries. Select a giving
+        method below.
       </p>
 
       <GiveOptions />

@@ -6,7 +6,6 @@ export default function HomePage() {
     <>
       <section className="hero" id="join">
         <div className="hero-copy">
-          <div className="eyebrow">Detroit, Michigan</div>
           <h1>
             Welcome to <span className="accent">Journey</span>
           </h1>
@@ -72,9 +71,9 @@ export default function HomePage() {
               week, you are welcome here.
             </p>
             <p>
-              Our website is your central place to find service times, watch
-              live when services are streaming, request prayer, give, and stay
-              connected with Journey Christian Ministries.
+              Our website is your central place for service times, live
+              streaming, prayer requests, online giving, and staying connected
+              with Journey Christian Ministries.
             </p>
           </div>
           <div className="details">
