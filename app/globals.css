@@ -572,17 +572,36 @@ select:focus-visible,
 /* ---------- Give page ---------- */
 .give-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 14px;
   margin: 22px 0 8px;
+  max-width: 360px;
 }
 .give-btn {
+  width: 100%;
   font-size: 1.05rem;
   padding: 14px 26px;
 }
+/* Collapsible giving option (accordion). Animates height only (no fade). */
+.give-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s ease;
+}
+.give-collapse.open {
+  grid-template-rows: 1fr;
+}
+.give-collapse-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .give-collapse {
+    transition: none;
+  }
+}
 .give-zelle {
-  margin-top: 26px;
-  max-width: 560px;
+  margin-top: 14px;
 }
 .give-zelle-title {
   color: var(--deep);

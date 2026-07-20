@@ -64,8 +64,8 @@ export default function AboutPage() {
             growing, there is a place for you at Journey Christian Ministries.
           </p>
           <p>
-            Come as you are. God will meet you where you are&mdash;and your
-            journey can begin today.
+            Come as you are. God will meet you where you are, and your journey
+            can begin today.
           </p>
         </section>
 

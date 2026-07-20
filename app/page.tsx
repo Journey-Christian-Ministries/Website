@@ -72,9 +72,9 @@ export default function HomePage() {
               week, you are welcome here.
             </p>
             <p>
-              Our website will serve as the central place to find service times,
-              watch live when services are streaming, request prayer, give, and
-              stay connected with the ministry.
+              Our website is your central place to find service times, watch
+              live when services are streaming, request prayer, give, and stay
+              connected with Journey Christian Ministries.
             </p>
           </div>
           <div className="details">
