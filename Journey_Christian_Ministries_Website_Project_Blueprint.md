@@ -1,7 +1,7 @@
 # Journey Christian Ministries Website Project Blueprint
 
-**Version:** 1.0\
-**Status:** Initial Blueprint
+**Version:** 1.1\
+**Status:** Updated to reflect the approved homepage and implemented Next.js application (navigation, live-streaming behavior, sermons, and contact).
 
 ------------------------------------------------------------------------
 
@@ -93,28 +93,45 @@ Primary buttons:
 
 # 6. Live Streaming
 
-## Watch Live Button
+## Watch Live Button (Implemented behavior)
 
-The website should intelligently display the Watch Live button.
+The website intelligently displays the Watch Live indicator based on the
+service schedule, computed in the church's local timezone
+(`America/Detroit`, Eastern) with automatic Daylight Saving Time handling
+(no hardcoded UTC offset).
 
-### During Live Service
+### When the button appears
 
-Display:
+The **Live Now** button/strip appears **only** when a service is live or
+within **10 minutes before** its start time, and remains visible through
+**3 hours after** the start time. Precisely, the visibility window is:
+
+> **[start − 10 minutes, start + 180 minutes]**
+
+Services:
+
+-   Sunday Worship — 10:00 AM
+-   Wednesday Bible Study — 7:00 PM
+
+When visible, it displays:
 
 -   🔴 Live Now
--   Watch Live button
--   Red pulsing live indicator
--   Link to the active livestream
+-   A red pulsing live indicator
+-   A **Watch Live** button linking to the **on-site `/watch` page**
+    (the YouTube Live player), not an external destination
 
-### Outside Service Times
+### Outside the window
 
-Hide the Watch Live button and instead display:
+The Live Now button/strip is **hidden entirely**. It defaults to hidden on
+first render so nothing flashes before hydration. The homepage schedule
+block always shows the service times (Sunday 10:00 AM; Wednesday 7:00 PM,
+online only).
 
-**Sunday Worship**\
-10:00 AM
+### Platforms
 
-**Wednesday Bible Study**\
-7:00 PM (Online)
+-   **YouTube** is the primary on-site viewing platform (embedded on
+    `/watch`).
+-   **Facebook** is used for outreach only, not the on-site player.
 
 ------------------------------------------------------------------------
 
@@ -169,7 +186,10 @@ Requirements:
 
 # 10. Ministries
 
-Future expansion area.
+Future expansion area. **Ministries is not part of the approved primary
+navigation** (see Section 15); when introduced it will live under another
+section (for example, About) or be added to the navigation only after
+approval.
 
 Potential ministries:
 
@@ -186,15 +206,15 @@ the website.
 
 # 11. Sermons
 
-Future capability.
+The Sermons page presents recorded messages as embedded YouTube videos,
+organized into **two categories**:
 
-Should support:
+-   **Sunday Services**
+-   **Bible Studies**
 
--   Livestream archive
--   YouTube
--   Facebook videos
-
-Design should be expandable.
+The page is currently a clearly-labeled placeholder until video content is
+provided. Design should remain expandable to accommodate additional videos
+and categories over time.
 
 ------------------------------------------------------------------------
 
@@ -215,13 +235,18 @@ Future online giving integrations should be easy to add.
 
 # 13. Contact
 
-Include:
+The Contact page includes:
 
--   Contact form
--   Phone
--   Email
--   Address
--   Google Map
+-   Address (`4330 W. Davison Ave., Detroit, Michigan`)
+-   An embedded, responsive Google Map centered on that address
+-   A contact form with fields: **Full Name, Email Address, Subject,
+    Message**, and a **Send Message** button
+-   **Cloudflare Turnstile** for spam protection (verified server-side)
+-   Email delivery via **Resend**
+
+**No phone number or email address is displayed on the page.** Visitors
+reach the church through the contact form; submissions are delivered to the
+church's administrative inbox with the visitor's email set as Reply-To.
 
 ------------------------------------------------------------------------
 
@@ -240,16 +265,22 @@ Include:
 
 # 15. Navigation
 
-Primary navigation:
+Primary navigation (approved):
 
--   Home
--   About
--   Ministries
--   Watch
--   Give
--   Contact
+-   Home (`/`)
+-   About (`/about`)
+-   Sermons (`/sermons`)
+-   Give (`/give`)
+-   Contact (`/contact`)
 
-Navigation should remain simple, clean, and responsive.
+`Ministries` and `Watch` are **not** primary navigation items. The `/watch`
+page still exists and is reached contextually via the Live Now button when a
+service is streaming (see Section 6).
+
+Navigation remains simple, clean, and responsive. On screens below 900px an
+accessible mobile menu (hamburger with `aria-expanded`/`aria-controls`,
+keyboard operable) exposes all links; the desktop appearance matches the
+approved design.
 
 ------------------------------------------------------------------------
 
