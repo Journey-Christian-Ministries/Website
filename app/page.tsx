@@ -1,5 +1,4 @@
 import Image from "next/image";
-import LiveStrip from "@/components/LiveStrip";
 import { siteConfig } from "@/lib/site";
 
 export default function HomePage() {
@@ -93,8 +92,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-
-        <LiveStrip />
       </section>
     </>
   );
