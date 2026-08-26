@@ -13,53 +13,68 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="page">
-      <h1 className="page-title">About Journey Christian Ministries</h1>
-      <div className="about">
-        <section>
-          <h2 className="about-subhead">Our Story</h2>
-          <p>
-            Journey Christian Ministries was founded by Pastor Deshawn Tatum
-            with the faithful support of First Lady Monica Tatum in 2020 during
-            the height of the COVID-19 pandemic. At a time when many churches
-            were closing their doors and moving exclusively online, Pastor Tatum
-            was led by God to move forward in faith and establish a new
-            ministry. What began during a season of uncertainty has grown into a
-            church committed to sharing God&rsquo;s Word, serving the community,
-            and welcoming people from every walk of life.
-          </p>
+    <div className="page about-page">
+      <div className="page-head">
+        <p className="eyebrow">Our Church</p>
+        <h1 className="page-title">
+          About Journey Christian <span className="accent">Ministries</span>
+        </h1>
+      </div>
 
-          <h2 className="about-subhead">A Bible-Teaching Church</h2>
-          <p>
-            Journey Christian Ministries is a Bible-teaching church within the
-            Church of God in Christ (COGIC). We believe in teaching the Word of
-            God in a way that is clear, practical, and applicable to everyday
-            life. No matter where you are in life or on your spiritual journey,
-            you are welcome here. You don&rsquo;t need to have life all figured
-            out in order to take your next step in faith. We believe God will
-            meet you right where you are and guide you forward.
-          </p>
+      <div className="about-grid">
+        <div className="about">
+          <section>
+            <h2 className="about-subhead">Our Story</h2>
+            <p>
+              Journey Christian Ministries was founded by Pastor Deshawn Tatum
+              with the faithful support of First Lady Monica Tatum in 2020 during
+              the height of the COVID-19 pandemic. At a time when many churches
+              were closing their doors and moving exclusively online, Pastor Tatum
+              was led by God to move forward in faith and establish a new
+              ministry. What began during a season of uncertainty has grown into a
+              church committed to sharing God&rsquo;s Word, serving the community,
+              and welcoming people from every walk of life.
+            </p>
+          </section>
 
-          <h2 className="about-subhead">Serving Our Community</h2>
-          <p>
-            Giving back is an important part of who we are. Journey Christian
-            Ministries is committed to supporting local families and creating
-            meaningful opportunities to serve our community. Through outreach
-            efforts such as our annual back-to-school supply giveaways, we work
-            to meet practical needs while demonstrating the love of Christ.
-          </p>
+          <section>
+            <h2 className="about-subhead">A Bible-Teaching Church</h2>
+            <p>
+              Journey Christian Ministries is a Bible-teaching church within the
+              Church of God in Christ (COGIC). We believe in teaching the Word of
+              God in a way that is clear, practical, and applicable to everyday
+              life. No matter where you are in life or on your spiritual journey,
+              you are welcome here. You don&rsquo;t need to have life all figured
+              out in order to take your next step in faith. We believe God will
+              meet you right where you are and guide you forward.
+            </p>
+          </section>
 
-          <h2 className="about-subhead">You Are Welcome Here</h2>
-          <p>
-            Whether you are beginning your relationship with God, returning to
-            church, or looking for a church family where you can continue
-            growing, there is a place for you at Journey Christian Ministries.
-            Come as you are. God will meet you where you are, and your journey
-            can begin today.
-          </p>
-        </section>
+          <section>
+            <h2 className="about-subhead">Serving Our Community</h2>
+            <p>
+              Giving back is an important part of who we are. Journey Christian
+              Ministries is committed to supporting local families and creating
+              meaningful opportunities to serve our community. Through outreach
+              efforts such as our annual back-to-school supply giveaways, we work
+              to meet practical needs while demonstrating the love of Christ.
+            </p>
+          </section>
 
-        <section className="mission">
+          <section>
+            <h2 className="about-subhead">You Are Welcome Here</h2>
+            <p>
+              Whether you are beginning your relationship with God, returning to
+              church, or looking for a church family where you can continue
+              growing, there is a place for you at Journey Christian Ministries.
+              Come as you are. God will meet you where you are, and your journey
+              can begin today.
+            </p>
+          </section>
+        </div>
+
+        <aside className="mission">
+          <p className="eyebrow">Why We Are Here</p>
           <h2 className="mission-title">Our Mission</h2>
           <p>
             Everyone has a journey, and no two journeys look the same. Our
@@ -69,7 +84,7 @@ export default function AboutPage() {
             we walk alongside people as they discover God&rsquo;s purpose for
             their lives and move forward on their journey with Christ.
           </p>
-        </section>
+        </aside>
       </div>
     </div>
   );
