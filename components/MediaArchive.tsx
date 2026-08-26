@@ -1,18 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-
-type Category = "sunday" | "wednesday";
-
-type MediaItem = {
-  id: string;
-  category: Category;
-  tag: string;
-  title: string;
-  videoId: string;
-  date: string;
-  latest?: boolean;
-};
+import type { Category, MediaItem } from "@/lib/media";
 
 type FilterKey = "all" | Category | "live";
 
@@ -26,58 +15,6 @@ const YOUTUBE_CHANNEL_VIDEOS_URL =
 const YOUTUBE_CHANNEL_LIVE_URL =
   "https://www.youtube.com/@JourneyChristianMinistries/live";
 
-const mediaItems: MediaItem[] = [
-  {
-    id: "whats-in-your-hand",
-    category: "sunday",
-    tag: "Sunday Worship",
-    title: "What’s In Your Hand?",
-    videoId: "QeH_DpeZ7sI",
-    date: "August 23, 2026",
-    latest: true,
-  },
-  {
-    id: "wisdom-wednesdays-aug-19",
-    category: "wednesday",
-    tag: "Bible Study",
-    title: "Wisdom Wednesdays",
-    videoId: "7LojXPFyTac",
-    date: "August 19, 2026",
-  },
-  {
-    id: "elijah-vs-jezebel",
-    category: "sunday",
-    tag: "Sunday Worship",
-    title: "Prophet Elijah vs. Queen Jezebel",
-    videoId: "63psaklDifA",
-    date: "August 16, 2026",
-  },
-  {
-    id: "what-are-you-scared-of",
-    category: "sunday",
-    tag: "Sunday Worship",
-    title: "What Are You Scared Of?",
-    videoId: "SNVKwduOOek",
-    date: "August 9, 2026",
-  },
-  {
-    id: "wisdom-wednesdays-aug-5",
-    category: "wednesday",
-    tag: "Bible Study",
-    title: "Wisdom Wednesdays",
-    videoId: "5VxvbR7Hozo",
-    date: "August 5, 2026",
-  },
-  {
-    id: "wisdom-wednesdays-jul-29",
-    category: "wednesday",
-    tag: "Bible Study",
-    title: "Wisdom Wednesdays — July 29",
-    videoId: "NR5hypECplk",
-    date: "July 29, 2026",
-  },
-];
-
 const filters: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All Media" },
   { key: "sunday", label: "Sunday Worship" },
@@ -85,7 +22,7 @@ const filters: { key: FilterKey; label: string }[] = [
   { key: "live", label: "Watch Live" },
 ];
 
-export default function MediaArchive() {
+export default function MediaArchive({ items }: { items: MediaItem[] }) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [modal, setModal] = useState<ModalState>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -121,10 +58,10 @@ export default function MediaArchive() {
   const showLive = filter === "all" || filter === "live";
   const visibleItems =
     filter === "all"
-      ? mediaItems
+      ? items
       : filter === "live"
         ? []
-        : mediaItems.filter((item) => item.category === filter);
+        : items.filter((item) => item.category === filter);
 
   return (
     <>

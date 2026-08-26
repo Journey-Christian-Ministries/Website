@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import MediaArchive from "@/components/MediaArchive";
+import { getMediaItems } from "@/lib/media";
 
 export const metadata: Metadata = {
   title: "Media",
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function MediaPage() {
+export default async function MediaPage() {
+  const items = await getMediaItems();
+
   return (
     <div className="page media-page">
       <div className="page-head media-head">
@@ -34,7 +37,7 @@ export default function MediaPage() {
         </div>
       </div>
 
-      <MediaArchive />
+      <MediaArchive items={items} />
     </div>
   );
 }
