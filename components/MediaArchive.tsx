@@ -76,14 +76,6 @@ const mediaItems: MediaItem[] = [
     videoId: "NR5hypECplk",
     date: "July 29, 2026",
   },
-  {
-    id: "wisdom-wednesdays-recent",
-    category: "wednesday",
-    tag: "Bible Study",
-    title: "Wisdom Wednesdays",
-    videoId: "LNgmOhf7Rh0",
-    date: "Recently added",
-  },
 ];
 
 const filters: { key: FilterKey; label: string }[] = [
