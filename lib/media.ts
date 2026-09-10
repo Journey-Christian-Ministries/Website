@@ -10,8 +10,10 @@ export type MediaItem = {
   latest: boolean;
 };
 
-const YOUTUBE_CHANNEL_ID = "UCImEO1CqmaOeNS6X_nWVEOw";
-const FEED_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`;
+export const YOUTUBE_CHANNEL_ID = "UCImEO1CqmaOeNS6X_nWVEOw";
+export const YOUTUBE_FEED_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`;
+export const YOUTUBE_HUB_URL = "https://pubsubhubbub.appspot.com/subscribe";
+export const MEDIA_CACHE_TAG = "youtube-media";
 
 // Used only if the YouTube feed can't be fetched or parsed, so the page
 // never shows an empty or broken Media archive. Not a source of new
@@ -123,9 +125,11 @@ function parseFeed(xml: string): FeedEntry[] {
 
 export async function getMediaItems(): Promise<MediaItem[]> {
   try {
-    // Next.js Data Cache: served from cache for up to 3600s, then
-    // revalidated on the next incoming request (no background polling).
-    const res = await fetch(FEED_URL, { next: { revalidate: 3600 } });
+    // YouTube WebSub invalidates this tag when a video is published or updated.
+    // The one-hour lifetime remains as a fallback if a notification is missed.
+    const res = await fetch(YOUTUBE_FEED_URL, {
+      next: { revalidate: 3600, tags: [MEDIA_CACHE_TAG] },
+    });
     if (!res.ok) {
       throw new Error(`YouTube feed responded with ${res.status}`);
     }
