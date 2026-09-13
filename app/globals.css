@@ -413,9 +413,35 @@ h1 {
   background: var(--blue);
   color: white;
 }
+.btn.live-button {
+  border-color: #dc2626;
+  background: #dc2626;
+  color: #fff;
+  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.42);
+  animation: live-button-glow 1.8s ease-out infinite;
+}
+.btn.live-button:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+@keyframes live-button-glow {
+  70% {
+    box-shadow: 0 0 0 12px rgba(220, 38, 38, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .btn.live-button {
+    animation: none;
+  }
 }
 .btn.success {
   border-color: #15803d;
