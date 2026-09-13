@@ -12,8 +12,7 @@ type ModalState =
 
 const YOUTUBE_CHANNEL_VIDEOS_URL =
   "https://www.youtube.com/@JourneyChristianMinistries/videos";
-const YOUTUBE_CHANNEL_LIVE_URL =
-  "https://www.youtube.com/@JourneyChristianMinistries/live";
+const YOUTUBE_CHANNEL_ID = "UCImEO1CqmaOeNS6X_nWVEOw";
 
 const filters: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All Media" },
@@ -177,19 +176,13 @@ export default function MediaArchive({ items }: { items: MediaItem[] }) {
                 />
               </div>
             ) : (
-              <div className="offline">
-                <p className="eyebrow" style={{ color: "#8ee6ff" }}>
-                  Next Broadcast
-                </p>
-                <h2>Journey isn&rsquo;t live right now.</h2>
-                <p>Join us Sundays at 10:00 AM and Wednesdays at 7:00 PM.</p>
-                <a
-                  href={YOUTUBE_CHANNEL_LIVE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Open Journey on YouTube ↗
-                </a>
+              <div className="video">
+                <iframe
+                  title="Journey Christian Ministries livestream"
+                  src={`https://www.youtube.com/embed/live_stream?channel=${YOUTUBE_CHANNEL_ID}&autoplay=1`}
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
             )}
           </div>
