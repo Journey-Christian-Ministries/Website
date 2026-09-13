@@ -8,7 +8,6 @@ type YouTubePlayerResponse = {
     videoId?: string;
     channelId?: string;
     isLive?: boolean;
-    isLiveContent?: boolean;
     isUpcoming?: boolean;
   };
 };
@@ -96,7 +95,7 @@ export async function GET() {
     const live = Boolean(
       details?.videoId === videoId &&
         details.channelId === YOUTUBE_CHANNEL_ID &&
-        (details.isLive || details.isLiveContent) &&
+        details.isLive &&
         !details.isUpcoming
     );
 
