@@ -1,4 +1,5 @@
 import Image from "next/image";
+import HomeLiveIndicator from "@/components/HomeLiveIndicator";
 import { siteConfig } from "@/lib/site";
 
 export default function HomePage() {
@@ -91,6 +92,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+        <HomeLiveIndicator />
       </section>
     </>
   );
