@@ -12,7 +12,8 @@ type ModalState =
 
 const YOUTUBE_CHANNEL_VIDEOS_URL =
   "https://www.youtube.com/@JourneyChristianMinistries/videos";
-const YOUTUBE_CHANNEL_ID = "UCImEO1CqmaOeNS6X_nWVEOw";
+const YOUTUBE_CHANNEL_LIVE_URL =
+  "https://www.youtube.com/@JourneyChristianMinistries/live";
 
 const filters: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All Media" },
@@ -24,6 +25,8 @@ const filters: { key: FilterKey; label: string }[] = [
 export default function MediaArchive({ items }: { items: MediaItem[] }) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [modal, setModal] = useState<ModalState>(null);
+  const [liveVideoId, setLiveVideoId] = useState<string | null>(null);
+  const [liveStatusKnown, setLiveStatusKnown] = useState(false);
   const triggerRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -53,6 +56,37 @@ export default function MediaArchive({ items }: { items: MediaItem[] }) {
       document.body.style.overflow = "";
     };
   }, [modal, closeModal]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkYouTubeLive() {
+      try {
+        const response = await fetch("/api/youtube-live", { cache: "no-store" });
+        if (!response.ok) throw new Error("Unable to check YouTube live status");
+
+        const status = (await response.json()) as {
+          live: boolean;
+          videoId?: string;
+        };
+
+        if (!cancelled) {
+          setLiveVideoId(status.live && status.videoId ? status.videoId : null);
+          setLiveStatusKnown(true);
+        }
+      } catch {
+        if (!cancelled) setLiveStatusKnown(true);
+      }
+    }
+
+    void checkYouTubeLive();
+    const timer = window.setInterval(checkYouTubeLive, 60_000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   const showLive = filter === "all" || filter === "live";
   const visibleItems =
@@ -100,11 +134,11 @@ export default function MediaArchive({ items }: { items: MediaItem[] }) {
               className="thumb live-thumb"
               onClick={(e) => openModal({ type: "live" }, e.currentTarget)}
             >
-              <span className="next">Next Broadcast</span>
+              <span className="next">{liveVideoId ? "Live Now" : "Next Broadcast"}</span>
               <span className="live-word">Journey Live</span>
             </button>
             <div className="media-body">
-              <span className="tag">Watch Live</span>
+              <span className="tag">{liveVideoId ? "Live Now" : "Watch Live"}</span>
               <h3>Journey Livestream</h3>
               <div className="meta">Sunday • 10:00 AM | Wednesday • 7:00 PM</div>
             </div>
@@ -175,14 +209,33 @@ export default function MediaArchive({ items }: { items: MediaItem[] }) {
                   allowFullScreen
                 />
               </div>
-            ) : (
+            ) : liveVideoId ? (
               <div className="video">
                 <iframe
                   title="Journey Christian Ministries livestream"
-                  src={`https://www.youtube.com/embed/live_stream?channel=${YOUTUBE_CHANNEL_ID}&autoplay=1`}
+                  src={`https://www.youtube.com/embed/${liveVideoId}?autoplay=1`}
                   allow="autoplay; encrypted-media; picture-in-picture"
                   allowFullScreen
                 />
+              </div>
+            ) : (
+              <div className="offline">
+                <p className="eyebrow" style={{ color: "#8ee6ff" }}>
+                  {liveStatusKnown ? "Next Broadcast" : "Checking Livestream"}
+                </p>
+                <h2>
+                  {liveStatusKnown
+                    ? "Journey isn’t live right now."
+                    : "Checking YouTube…"}
+                </h2>
+                <p>Join us Sundays at 10:00 AM and Wednesdays at 7:00 PM.</p>
+                <a
+                  href={YOUTUBE_CHANNEL_LIVE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open Journey on YouTube ↗
+                </a>
               </div>
             )}
           </div>
