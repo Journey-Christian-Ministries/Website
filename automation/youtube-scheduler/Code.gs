@@ -9,6 +9,37 @@ const JOURNEY_SCHEDULE = Object.freeze({
 });
 
 /**
+ * Public, read-only status endpoint for the Journey website.
+ * Deploy this script as a web app that executes as the channel owner.
+ */
+function doGet() {
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get("journey-youtube-live-status");
+  if (cached) return jsonResponse_(cached);
+
+  let payload;
+  try {
+    const active = listBroadcasts_("active");
+    payload = active.length
+      ? { live: true, videoId: active[0].id }
+      : { live: false };
+  } catch (error) {
+    console.error("Unable to check Journey's live status: " + error);
+    payload = { live: false };
+  }
+
+  const body = JSON.stringify(payload);
+  cache.put("journey-youtube-live-status", body, 20);
+  return jsonResponse_(body);
+}
+
+function jsonResponse_(body) {
+  return ContentService.createTextOutput(body).setMimeType(
+    ContentService.MimeType.JSON
+  );
+}
+
+/**
  * Run this once while signed in to Journey's YouTube-owning Google account.
  * It installs one hourly trigger and immediately repairs the current schedule.
  */
