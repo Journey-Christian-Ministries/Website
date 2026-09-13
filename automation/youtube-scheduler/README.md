@@ -18,5 +18,6 @@ This Google Apps Script keeps one next Journey service advertised on YouTube.
 5. Run `previewJourneyLivestreamSchedule` and confirm the next six dates.
 6. Run `setupJourneyLivestreamScheduler`, review Google's permissions, and approve access.
 7. Confirm the execution result is `created`, `updated`, or `already-current` and verify the correct upcoming event on Journey's YouTube channel.
+8. Deploy the script as a **Web app**, set **Execute as** to **Me**, and set access to **Anyone**. The web app exposes only the active broadcast ID so the Journey website can show its live button reliably.
 
 The setup function installs a single hourly trigger. Rerunning setup replaces that trigger instead of creating duplicates.
