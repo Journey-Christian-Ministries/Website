@@ -15,9 +15,8 @@ export const YOUTUBE_FEED_URL = `https://www.youtube.com/feeds/videos.xml?channe
 export const YOUTUBE_HUB_URL = "https://pubsubhubbub.appspot.com/subscribe";
 export const MEDIA_CACHE_TAG = "youtube-media";
 
-// Used only if the YouTube feed can't be fetched or parsed, so the page
-// never shows an empty or broken Media archive. Not a source of new
-// content — just the last known-good list.
+// Used only if the YouTube API is unavailable, so the page never shows an
+// empty or broken Media archive. It is not the primary archive source.
 const FALLBACK_ITEMS: Omit<MediaItem, "latest">[] = [
   {
     id: "whats-in-your-hand",
@@ -69,16 +68,6 @@ const FALLBACK_ITEMS: Omit<MediaItem, "latest">[] = [
   },
 ];
 
-function decodeEntities(value: string): string {
-  return value
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&apos;/g, "'")
-    .trim();
-}
-
 function categorize(title: string): { category: Category; tag: string } {
   if (/wisdom wednesdays/i.test(title)) {
     return { category: "wednesday", tag: "Bible Study" };
@@ -102,59 +91,117 @@ function formatDate(published: string): string {
 // RSS feed. Excluded so the archive doesn't surface a broken player.
 const EXCLUDED_VIDEO_IDS = new Set(["LNgmOhf7Rh0"]);
 
-type FeedEntry = { videoId: string; title: string; published: string };
+type YouTubeApiResponse<T> = {
+  items?: T[];
+  nextPageToken?: string;
+};
 
-// YouTube's channel RSS feed is a small, stable Atom document. A hand-rolled
-// extractor avoids pulling in an XML parser dependency for a handful of
-// well-known, always-present tags.
-function parseFeed(xml: string): FeedEntry[] {
-  const entries: FeedEntry[] = [];
-  const entryRe = /<entry>([\s\S]*?)<\/entry>/g;
-  let match: RegExpExecArray | null;
-  while ((match = entryRe.exec(xml))) {
-    const block = match[1];
-    const videoId = block.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1];
-    const title = block.match(/<title>([^<]*)<\/title>/)?.[1];
-    const published = block.match(/<published>([^<]+)<\/published>/)?.[1];
-    if (videoId && title && published && !EXCLUDED_VIDEO_IDS.has(videoId)) {
-      entries.push({ videoId, title: decodeEntities(title), published });
-    }
+type PlaylistItem = {
+  snippet?: { resourceId?: { videoId?: string } };
+};
+
+type Video = {
+  id?: string;
+  snippet?: { title?: string; publishedAt?: string };
+  status?: { privacyStatus?: string };
+};
+
+async function fetchYouTubeApi<T>(
+  resource: string,
+  params: Record<string, string>
+): Promise<YouTubeApiResponse<T>> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) {
+    throw new Error("YOUTUBE_API_KEY is not configured");
   }
-  return entries;
+
+  const query = new URLSearchParams({ ...params, key: apiKey });
+  const response = await fetch(
+    `https://www.googleapis.com/youtube/v3/${resource}?${query.toString()}`,
+    { next: { revalidate: 3600, tags: [MEDIA_CACHE_TAG] } }
+  );
+  if (!response.ok) {
+    throw new Error(`YouTube Data API ${resource} responded with ${response.status}`);
+  }
+  return (await response.json()) as YouTubeApiResponse<T>;
+}
+
+async function getUploadsPlaylistId(): Promise<string> {
+  const response = await fetchYouTubeApi<{ contentDetails?: { relatedPlaylists?: { uploads?: string } } }>(
+    "channels",
+    { part: "contentDetails", id: YOUTUBE_CHANNEL_ID }
+  );
+  const uploadsPlaylistId = response.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+  if (!uploadsPlaylistId) throw new Error("YouTube uploads playlist was not found");
+  return uploadsPlaylistId;
+}
+
+async function getAllUploadVideoIds(playlistId: string): Promise<string[]> {
+  const videoIds: string[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const response = await fetchYouTubeApi<PlaylistItem>("playlistItems", {
+      part: "snippet",
+      maxResults: "50",
+      playlistId,
+      ...(pageToken ? { pageToken } : {}),
+    });
+    for (const item of response.items ?? []) {
+      const videoId = item.snippet?.resourceId?.videoId;
+      if (videoId && !EXCLUDED_VIDEO_IDS.has(videoId)) videoIds.push(videoId);
+    }
+    pageToken = response.nextPageToken;
+  } while (pageToken);
+
+  return videoIds;
+}
+
+async function getVideos(videoIds: string[]): Promise<Video[]> {
+  const videos: Video[] = [];
+  for (let index = 0; index < videoIds.length; index += 50) {
+    const response = await fetchYouTubeApi<Video>("videos", {
+      part: "snippet,status",
+      id: videoIds.slice(index, index + 50).join(","),
+    });
+    videos.push(...(response.items ?? []));
+  }
+  return videos;
+}
+
+async function getYouTubeArchive(): Promise<MediaItem[]> {
+  const playlistId = await getUploadsPlaylistId();
+  const videos = await getVideos(await getAllUploadVideoIds(playlistId));
+  const publicVideos = videos.filter(
+    (video): video is Video & { id: string; snippet: { title: string; publishedAt: string } } =>
+      Boolean(
+        video.id &&
+          video.snippet?.title &&
+          video.snippet.publishedAt &&
+          video.status?.privacyStatus === "public"
+      )
+  );
+  const sorted = publicVideos.sort(
+    (a, b) => new Date(b.snippet.publishedAt).getTime() - new Date(a.snippet.publishedAt).getTime()
+  );
+
+  return sorted.map((video, index) => {
+    const { category, tag } = categorize(video.snippet.title);
+    return {
+      id: video.id,
+      category,
+      tag,
+      title: video.snippet.title,
+      videoId: video.id,
+      date: formatDate(video.snippet.publishedAt),
+      latest: index === 0,
+    };
+  });
 }
 
 export async function getMediaItems(): Promise<MediaItem[]> {
   try {
-    // YouTube WebSub invalidates this tag when a video is published or updated.
-    // The one-hour lifetime remains as a fallback if a notification is missed.
-    const res = await fetch(YOUTUBE_FEED_URL, {
-      next: { revalidate: 3600, tags: [MEDIA_CACHE_TAG] },
-    });
-    if (!res.ok) {
-      throw new Error(`YouTube feed responded with ${res.status}`);
-    }
-    const xml = await res.text();
-    const entries = parseFeed(xml);
-    if (entries.length === 0) {
-      throw new Error("YouTube feed returned no parsable entries");
-    }
-
-    const sorted = [...entries].sort(
-      (a, b) => new Date(b.published).getTime() - new Date(a.published).getTime()
-    );
-
-    return sorted.map((entry, index) => {
-      const { category, tag } = categorize(entry.title);
-      return {
-        id: entry.videoId,
-        category,
-        tag,
-        title: entry.title,
-        videoId: entry.videoId,
-        date: formatDate(entry.published),
-        latest: index === 0,
-      };
-    });
+    return await getYouTubeArchive();
   } catch (err) {
     console.error("[media] Falling back to the last known video list:", err);
     return FALLBACK_ITEMS.map((item, index) => ({ ...item, latest: index === 0 }));
