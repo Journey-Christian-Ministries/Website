@@ -14,6 +14,9 @@ export const YOUTUBE_CHANNEL_ID = "UCImEO1CqmaOeNS6X_nWVEOw";
 export const YOUTUBE_FEED_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`;
 export const YOUTUBE_HUB_URL = "https://pubsubhubbub.appspot.com/subscribe";
 export const MEDIA_CACHE_TAG = "youtube-media";
+export const YOUTUBE_LIVE_STATUS_URL =
+  "https://script.google.com/macros/s/AKfycbyZOhd1yfjh3Hs7VLdEIyci2DEW9HOmq-7AxtxwwMJdrINl7ob7byHL41867Fq4-fdV3Q/exec";
+export const YOUTUBE_ARCHIVE_URL = `${YOUTUBE_LIVE_STATUS_URL}?view=archive`;
 
 // Keep the older known-good archive entries in the site so a fresh deployment
 // cannot make them disappear when YouTube's RSS feed only returns recent items.
@@ -99,6 +102,41 @@ function formatDate(published: string): string {
 const EXCLUDED_VIDEO_IDS = new Set(["LNgmOhf7Rh0"]);
 
 type FeedEntry = { videoId: string; title: string; published: string };
+type ArchiveEntry = {
+  videoId: string;
+  title: string;
+  publishedAt: string;
+};
+
+type ArchiveResponse = {
+  videos?: unknown;
+};
+
+function parseArchive(payload: ArchiveResponse): ArchiveEntry[] {
+  if (!Array.isArray(payload.videos)) return [];
+
+  return payload.videos.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+
+    const candidate = item as Record<string, unknown>;
+    const videoId = candidate.videoId;
+    const title = candidate.title;
+    const publishedAt = candidate.publishedAt;
+
+    if (
+      typeof videoId !== "string" ||
+      !/^[A-Za-z0-9_-]{11}$/.test(videoId) ||
+      EXCLUDED_VIDEO_IDS.has(videoId) ||
+      typeof title !== "string" ||
+      typeof publishedAt !== "string" ||
+      Number.isNaN(new Date(publishedAt).getTime())
+    ) {
+      return [];
+    }
+
+    return [{ videoId, title, publishedAt }];
+  });
+}
 
 function parseFeed(xml: string): FeedEntry[] {
   const entries: FeedEntry[] = [];
@@ -127,6 +165,40 @@ function knownArchiveWithLatest(): MediaItem[] {
 }
 
 export async function getMediaItems(): Promise<MediaItem[]> {
+  try {
+    const response = await fetch(YOUTUBE_ARCHIVE_URL, {
+      redirect: "follow",
+      next: { revalidate: 3600, tags: [MEDIA_CACHE_TAG] },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Journey archive responded with ${response.status}`);
+    }
+
+    const entries = parseArchive((await response.json()) as ArchiveResponse);
+    if (entries.length === 0) {
+      throw new Error("Journey archive returned no valid videos");
+    }
+
+    return entries.map((entry, index) => {
+      const { category, tag } = categorize(entry.title);
+      return {
+        id: entry.videoId,
+        category,
+        tag,
+        title: entry.title,
+        videoId: entry.videoId,
+        date: formatDate(entry.publishedAt),
+        latest: index === 0,
+      };
+    });
+  } catch (archiveError) {
+    console.error(
+      "[media] Apps Script archive unavailable; using RSS:",
+      archiveError
+    );
+  }
+
   try {
     const response = await fetch(YOUTUBE_FEED_URL, {
       next: { revalidate: 3600, tags: [MEDIA_CACHE_TAG] },
@@ -164,8 +236,8 @@ export async function getMediaItems(): Promise<MediaItem[]> {
     );
 
     return sorted.map((item, index) => ({ ...item, latest: index === 0 }));
-  } catch (error) {
-    console.error("[media] Falling back to the known archive list:", error);
+  } catch (feedError) {
+    console.error("[media] Falling back to the known archive list:", feedError);
     return knownArchiveWithLatest();
   }
 }

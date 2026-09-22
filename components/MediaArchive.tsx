@@ -14,12 +14,27 @@ const YOUTUBE_CHANNEL_VIDEOS_URL =
   "https://www.youtube.com/@JourneyChristianMinistries/videos";
 const YOUTUBE_CHANNEL_LIVE_URL =
   "https://www.youtube.com/@JourneyChristianMinistries/live";
-const UPCOMING_EVENT = {
-  videoId: "1GQSuklWyxA",
-  title: "Sunday Worship",
-  date: "September 27, 2026",
-  time: "10:00 AM Eastern",
+type UpcomingBroadcast = {
+  videoId: string;
+  title: string;
+  scheduledStartTime: string;
 };
+
+function formatUpcomingDate(value: string) {
+  const start = new Date(value);
+  const date = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "America/Detroit",
+  }).format(start);
+  const time = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Detroit",
+  }).format(start);
+  return `${date} • ${time} Eastern`;
+}
 
 const filters: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All Media" },
@@ -32,6 +47,7 @@ export default function MediaArchive({ items }: { items: MediaItem[] }) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [modal, setModal] = useState<ModalState>(null);
   const [liveVideoId, setLiveVideoId] = useState<string | null>(null);
+  const [upcoming, setUpcoming] = useState<UpcomingBroadcast | null>(null);
   const [liveStatusKnown, setLiveStatusKnown] = useState(false);
   const triggerRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -74,10 +90,12 @@ export default function MediaArchive({ items }: { items: MediaItem[] }) {
         const status = (await response.json()) as {
           live: boolean;
           videoId?: string;
+          upcoming?: UpcomingBroadcast | null;
         };
 
         if (!cancelled) {
           setLiveVideoId(status.live && status.videoId ? status.videoId : null);
+          setUpcoming(status.upcoming ?? null);
           setLiveStatusKnown(true);
         }
       } catch {
@@ -151,18 +169,18 @@ export default function MediaArchive({ items }: { items: MediaItem[] }) {
           </article>
         )}
 
-        {showLive && !liveVideoId && (
+        {showLive && !liveVideoId && upcoming && (
           <article className="media-card" data-cat="live">
             <a
               className="thumb"
-              href={`https://www.youtube.com/watch?v=${UPCOMING_EVENT.videoId}`}
+              href={`https://www.youtube.com/watch?v=${upcoming.videoId}`}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Watch ${UPCOMING_EVENT.title} on YouTube`}
+              aria-label={`View ${upcoming.title} on YouTube`}
             >
               <img
-                src={`https://img.youtube.com/vi/${UPCOMING_EVENT.videoId}/hqdefault.jpg`}
-                alt={`${UPCOMING_EVENT.title} video thumbnail`}
+                src={`https://img.youtube.com/vi/${upcoming.videoId}/hqdefault.jpg`}
+                alt={`${upcoming.title} video thumbnail`}
               />
               <span className="shade" />
               <span className="next">Next Broadcast</span>
@@ -170,9 +188,9 @@ export default function MediaArchive({ items }: { items: MediaItem[] }) {
             </a>
             <div className="media-body">
               <span className="tag">Upcoming</span>
-              <h3>{UPCOMING_EVENT.title}</h3>
+              <h3>{upcoming.title}</h3>
               <div className="meta">
-                {UPCOMING_EVENT.date} • {UPCOMING_EVENT.time}
+                {formatUpcomingDate(upcoming.scheduledStartTime)}
               </div>
             </div>
           </article>
@@ -261,7 +279,7 @@ export default function MediaArchive({ items }: { items: MediaItem[] }) {
                     ? "Journey isn’t live right now."
                     : "Checking YouTube…"}
                 </h2>
-                <p>Join us Sundays at 10:00 AM and Wednesdays at 7:00 PM.</p>
+                <p>Join us Sundays at 10:00 AM Eastern.</p>
                 <a
                   href={YOUTUBE_CHANNEL_LIVE_URL}
                   target="_blank"

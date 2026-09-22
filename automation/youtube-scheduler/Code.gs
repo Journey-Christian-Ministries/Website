@@ -1,9 +1,7 @@
 const JOURNEY_SCHEDULE = Object.freeze({
   timeZone: "America/Detroit",
   sundayTitle: "Sunday Worship",
-  wednesdayTitle: "Wisdom Wednesdays",
   descriptionMarker: "Automatically scheduled by Journey Christian Ministries.",
-  legacyBroadcastId: "LNgmOhf7Rh0",
   missedServiceGraceMinutes: 150,
   checkFunction: "maintainJourneyLivestreamSchedule",
 });
@@ -12,7 +10,11 @@ const JOURNEY_SCHEDULE = Object.freeze({
  * Public, read-only status endpoint for the Journey website.
  * Deploy this script as a web app that executes as the channel owner.
  */
-function doGet() {
+function doGet(event) {
+  if (event && event.parameter && event.parameter.view === "archive") {
+    return jsonResponse_(JSON.stringify(buildPublicVideoArchive_()));
+  }
+
   const cache = CacheService.getScriptCache();
   const cached = cache.get("journey-youtube-live-status");
   if (cached) return jsonResponse_(cached);
@@ -20,9 +22,19 @@ function doGet() {
   let payload;
   try {
     const active = listBroadcasts_("active");
+    const upcoming = findNextAdvertisedBroadcast_(listBroadcasts_("upcoming"));
+
     payload = active.length
-      ? { live: true, videoId: active[0].id }
-      : { live: false };
+      ? {
+          live: true,
+          videoId: active[0].id,
+          title: active[0].snippet.title,
+          upcoming: upcoming ? publicBroadcast_(upcoming) : null,
+        }
+      : {
+          live: false,
+          upcoming: upcoming ? publicBroadcast_(upcoming) : null,
+        };
   } catch (error) {
     console.error("Unable to check Journey's live status: " + error);
     payload = { live: false };
@@ -37,6 +49,125 @@ function jsonResponse_(body) {
   return ContentService.createTextOutput(body).setMimeType(
     ContentService.MimeType.JSON
   );
+}
+
+/**
+ * Returns every public uploaded video and completed livestream on the channel.
+ * Scheduled and currently-live broadcasts are intentionally omitted because the
+ * website displays those through the default live/upcoming response instead.
+ */
+function buildPublicVideoArchive_() {
+  const channelResponse = YouTube.Channels.list("contentDetails", {
+    mine: true,
+    maxResults: 1,
+  });
+  const channels = channelResponse.items || [];
+  if (!channels.length) {
+    throw new Error("Unable to find the Journey YouTube channel.");
+  }
+
+  const uploadsPlaylistId =
+    channels[0].contentDetails &&
+    channels[0].contentDetails.relatedPlaylists &&
+    channels[0].contentDetails.relatedPlaylists.uploads;
+  if (!uploadsPlaylistId) {
+    throw new Error("Unable to find the Journey uploads playlist.");
+  }
+
+  const videoIds = listUploadVideoIds_(uploadsPlaylistId);
+  const videos = [];
+
+  for (let index = 0; index < videoIds.length; index += 50) {
+    const response = YouTube.Videos.list(
+      "id,snippet,status,liveStreamingDetails",
+      {
+        id: videoIds.slice(index, index + 50).join(","),
+        maxResults: 50,
+      }
+    );
+
+    (response.items || []).forEach(function (video) {
+      if (isPublicArchiveVideo_(video)) videos.push(publicArchiveVideo_(video));
+    });
+  }
+
+  videos.sort(function (left, right) {
+    return new Date(right.publishedAt).getTime() - new Date(left.publishedAt).getTime();
+  });
+
+  return {
+    videos: videos,
+    count: videos.length,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+function listUploadVideoIds_(uploadsPlaylistId) {
+  const videoIds = [];
+  let pageToken;
+
+  do {
+    const request = {
+      playlistId: uploadsPlaylistId,
+      maxResults: 50,
+    };
+    if (pageToken) request.pageToken = pageToken;
+
+    const response = YouTube.PlaylistItems.list("contentDetails", request);
+    (response.items || []).forEach(function (item) {
+      const videoId = item.contentDetails && item.contentDetails.videoId;
+      if (videoId) videoIds.push(videoId);
+    });
+    pageToken = response.nextPageToken;
+  } while (pageToken);
+
+  return videoIds;
+}
+
+function isPublicArchiveVideo_(video) {
+  if (!video || !video.id || video.id === "LNgmOhf7Rh0") return false;
+  if (!video.status || video.status.privacyStatus !== "public") return false;
+
+  const liveDetails = video.liveStreamingDetails || {};
+  const isUnfinishedLivestream =
+    (liveDetails.scheduledStartTime || liveDetails.actualStartTime) &&
+    !liveDetails.actualEndTime;
+  return !isUnfinishedLivestream;
+}
+
+function publicArchiveVideo_(video) {
+  const snippet = video.snippet || {};
+  const liveDetails = video.liveStreamingDetails || {};
+  const thumbnails = snippet.thumbnails || {};
+  const thumbnail = thumbnails.maxres ||
+    thumbnails.standard ||
+    thumbnails.high ||
+    thumbnails.medium ||
+    thumbnails.default;
+
+  return {
+    videoId: video.id,
+    title: snippet.title || "Journey Christian Ministries",
+    publishedAt: liveDetails.actualStartTime || snippet.publishedAt,
+    thumbnailUrl: thumbnail ? thumbnail.url : null,
+    type: liveDetails.actualEndTime ? "livestream" : "upload",
+  };
+}
+
+/** Logs a concise archive summary without changing YouTube. */
+function previewJourneyVideoArchive() {
+  const archive = buildPublicVideoArchive_();
+  console.log(
+    JSON.stringify(
+      {
+        count: archive.count,
+        firstFive: archive.videos.slice(0, 5),
+      },
+      null,
+      2
+    )
+  );
+  return archive;
 }
 
 /**
@@ -62,21 +193,8 @@ function setupJourneyLivestreamScheduler() {
  */
 function maintainJourneyLivestreamSchedule() {
   const now = new Date();
-  const active = listBroadcasts_("active");
-
-  if (active.length > 0) {
-    return {
-      action: "active-broadcast-left-unchanged",
-      broadcastId: active[0].id,
-      title: active[0].snippet.title,
-    };
-  }
-
   const upcoming = listBroadcasts_("upcoming");
   const managed = upcoming.find(isManagedBroadcast_);
-  const legacy = upcoming.find(function (broadcast) {
-    return broadcast.id === JOURNEY_SCHEDULE.legacyBroadcastId;
-  });
 
   let target;
   if (managed && isStillUsable_(managed, now)) {
@@ -88,13 +206,14 @@ function maintainJourneyLivestreamSchedule() {
   const matching = upcoming.find(function (broadcast) {
     return isMatchingService_(broadcast, target);
   });
-  const broadcast = managed || matching || legacy;
+  const broadcast = managed || matching;
 
   if (!broadcast) {
     const created = YouTube.LiveBroadcasts.insert(
       buildBroadcastResource_(null, target),
       "snippet,status,contentDetails"
     );
+    clearLiveStatusCache_();
     return summarize_("created", created);
   }
 
@@ -106,6 +225,7 @@ function maintainJourneyLivestreamSchedule() {
     buildBroadcastResource_(broadcast.id, target),
     "snippet,status,contentDetails"
   );
+  clearLiveStatusCache_();
   return summarize_("updated", updated);
 }
 
@@ -158,6 +278,39 @@ function listBroadcasts_(broadcastStatus) {
   return response.items || [];
 }
 
+function findNextAdvertisedBroadcast_(broadcasts) {
+  return broadcasts
+    .filter(function (broadcast) {
+      return isManagedBroadcast_(broadcast) || isSundayBroadcast_(broadcast);
+    })
+    .sort(function (left, right) {
+      return (
+        new Date(left.snippet.scheduledStartTime).getTime() -
+        new Date(right.snippet.scheduledStartTime).getTime()
+      );
+    })[0];
+}
+
+function isSundayBroadcast_(broadcast) {
+  if (!broadcast || !broadcast.snippet) return false;
+  return (
+    broadcast.snippet.title === JOURNEY_SCHEDULE.sundayTitle &&
+    isJourneyServiceTime_(new Date(broadcast.snippet.scheduledStartTime))
+  );
+}
+
+function publicBroadcast_(broadcast) {
+  return {
+    videoId: broadcast.id,
+    title: broadcast.snippet.title,
+    scheduledStartTime: broadcast.snippet.scheduledStartTime,
+  };
+}
+
+function clearLiveStatusCache_() {
+  CacheService.getScriptCache().remove("journey-youtube-live-status");
+}
+
 function isManagedBroadcast_(broadcast) {
   const description =
     broadcast && broadcast.snippet && broadcast.snippet.description;
@@ -194,16 +347,13 @@ function isConfiguredFor_(broadcast, service) {
     status.privacyStatus === "public" &&
     details.enableAutoStart === true &&
     details.enableAutoStop === true &&
-    details.enableEmbed === true &&
     details.recordFromStart === true
   );
 }
 
 function buildBroadcastResource_(id, service) {
-  const isSunday = service.title === JOURNEY_SCHEDULE.sundayTitle;
-  const description = isSunday
-    ? "Join Journey Christian Ministries for Sunday Worship live from Detroit, Michigan."
-    : "Join Journey Christian Ministries for Wisdom Wednesdays Bible Study live from Detroit, Michigan.";
+  const description =
+    "Join Journey Christian Ministries for Sunday Worship live from Detroit, Michigan.";
 
   const resource = {
     snippet: {
@@ -219,7 +369,6 @@ function buildBroadcastResource_(id, service) {
     contentDetails: {
       enableAutoStart: true,
       enableAutoStop: true,
-      enableEmbed: true,
       enableDvr: true,
       recordFromStart: true,
       latencyPreference: "normal",
@@ -257,30 +406,12 @@ function isJourneyServiceTime_(date) {
     "HH:mm"
   );
 
-  if (dayName === "Sun" && time === "10:00") return true;
-
-  if (dayName === "Wed" && time === "19:00") {
-    const dayOfMonth = Number(
-      Utilities.formatDate(date, JOURNEY_SCHEDULE.timeZone, "d")
-    );
-    const occurrence = Math.ceil(dayOfMonth / 7);
-    return occurrence !== 4;
-  }
-
-  return false;
+  return dayName === "Sun" && time === "10:00";
 }
 
 function serviceFromDate_(date) {
-  const dayName = Utilities.formatDate(
-    date,
-    JOURNEY_SCHEDULE.timeZone,
-    "EEE"
-  );
   return {
-    title:
-      dayName === "Sun"
-        ? JOURNEY_SCHEDULE.sundayTitle
-        : JOURNEY_SCHEDULE.wednesdayTitle,
+    title: JOURNEY_SCHEDULE.sundayTitle,
     start: date,
   };
 }
