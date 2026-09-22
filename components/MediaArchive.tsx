@@ -14,6 +14,12 @@ const YOUTUBE_CHANNEL_VIDEOS_URL =
   "https://www.youtube.com/@JourneyChristianMinistries/videos";
 const YOUTUBE_CHANNEL_LIVE_URL =
   "https://www.youtube.com/@JourneyChristianMinistries/live";
+const UPCOMING_EVENT = {
+  videoId: "1GQSuklWyxA",
+  title: "Sunday Worship",
+  date: "September 27, 2026",
+  time: "10:00 AM Eastern",
+};
 
 const filters: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All Media" },
@@ -127,20 +133,47 @@ export default function MediaArchive({ items }: { items: MediaItem[] }) {
       </div>
 
       <div className="media-grid">
-        {showLive && (
+        {showLive && liveVideoId && (
           <article className="media-card" data-cat="live">
             <button
               type="button"
               className="thumb live-thumb"
               onClick={(e) => openModal({ type: "live" }, e.currentTarget)}
             >
-              <span className="next">{liveVideoId ? "Live Now" : "Next Broadcast"}</span>
+              <span className="next">Live Now</span>
               <span className="live-word">Journey Live</span>
             </button>
             <div className="media-body">
-              <span className="tag">{liveVideoId ? "Live Now" : "Watch Live"}</span>
+              <span className="tag">Live Now</span>
               <h3>Journey Livestream</h3>
-              <div className="meta">Sunday • 10:00 AM | Wednesday • 7:00 PM</div>
+              <div className="meta">Watch the current broadcast</div>
+            </div>
+          </article>
+        )}
+
+        {showLive && !liveVideoId && (
+          <article className="media-card" data-cat="live">
+            <a
+              className="thumb"
+              href={`https://www.youtube.com/watch?v=${UPCOMING_EVENT.videoId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Watch ${UPCOMING_EVENT.title} on YouTube`}
+            >
+              <img
+                src={`https://img.youtube.com/vi/${UPCOMING_EVENT.videoId}/hqdefault.jpg`}
+                alt={`${UPCOMING_EVENT.title} video thumbnail`}
+              />
+              <span className="shade" />
+              <span className="next">Next Broadcast</span>
+              <span className="play" />
+            </a>
+            <div className="media-body">
+              <span className="tag">Upcoming</span>
+              <h3>{UPCOMING_EVENT.title}</h3>
+              <div className="meta">
+                {UPCOMING_EVENT.date} • {UPCOMING_EVENT.time}
+              </div>
             </div>
           </article>
         )}
