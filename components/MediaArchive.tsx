@@ -11,7 +11,7 @@ type ModalState =
   | null;
 
 const YOUTUBE_CHANNEL_VIDEOS_URL =
-  "https://www.youtube.com/@JourneyChristianMinistries/videos";
+  "https://www.youtube.com/@JourneyChristianMinistries";
 const YOUTUBE_CHANNEL_LIVE_URL =
   "https://www.youtube.com/@JourneyChristianMinistries/live";
 type UpcomingBroadcast = {
