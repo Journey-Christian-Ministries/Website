@@ -78,9 +78,9 @@ export default function HomePage() {
               with Journey Christian Ministries.
             </p>
           </div>
-          <div className="details">
+          <div className="details home-location-card">
             <div className="detail-line">
-              <b>Location</b>
+              <b>Visit Us</b>
               <span>{siteConfig.addressLine}.</span>
             </div>
           </div>
