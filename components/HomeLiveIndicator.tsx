@@ -1,42 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-type LiveStatus = {
-  live: boolean;
-  videoId?: string;
-};
+import { useState } from "react";
 
 export default function HomeLiveIndicator() {
-  const [liveVideoId, setLiveVideoId] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function checkYouTubeLive() {
-      try {
-        const response = await fetch("/api/youtube-live", { cache: "no-store" });
-        if (!response.ok) throw new Error("Unable to check YouTube live status");
-
-        const status = (await response.json()) as LiveStatus;
-        if (!cancelled) {
-          setLiveVideoId(status.live && status.videoId ? status.videoId : null);
-        }
-      } catch {
-        if (!cancelled) setLiveVideoId(null);
-      }
-    }
-
-    void checkYouTubeLive();
-    const timer = window.setInterval(checkYouTubeLive, 60_000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-    };
-  }, []);
-
-  if (!liveVideoId) return null;
+  // Preview branch only: force the live state so placement can be reviewed.
+  const [liveVideoId] = useState("preview");
 
   return (
     <aside className="live-strip home-live-strip" aria-label="Journey is live now">
@@ -51,7 +19,7 @@ export default function HomeLiveIndicator() {
       <div className="buttons">
         <a
           className="btn live-button"
-          href={`https://www.youtube.com/watch?v=${liveVideoId}`}
+          href="https://www.youtube.com/@JourneyChristianMinistries/live"
           target="_blank"
           rel="noopener noreferrer"
         >
