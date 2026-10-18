@@ -177,14 +177,58 @@ main {
 }
 .hero {
   display: grid;
-  grid-template-columns: 1.02fr 0.98fr;
-  align-items: end;
-  gap: 22px;
-  padding: 16px clamp(22px, 6vw, 82px) 18px;
-  min-height: 655px;
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
+  grid-template-areas:
+    "title title"
+    "copy photo";
+  align-items: start;
+  column-gap: 48px;
+  row-gap: 18px;
+  padding: 16px clamp(22px, 6vw, 82px) 28px;
+  min-height: 0;
+}
+.hero > h1 {
+  grid-area: title;
 }
 .hero-copy {
-  padding-bottom: 34px;
+  grid-area: copy;
+  padding-bottom: 0;
+}
+@media (min-width: 901px) {
+  .brand span {
+    max-width: none;
+    white-space: nowrap;
+    font-size: 0.96rem;
+  }
+  .hero > h1 {
+    white-space: nowrap;
+    text-align: center;
+    font-size: clamp(4rem, 7vw, 6.4rem);
+    letter-spacing: -0.035em;
+    line-height: 0.92;
+  }
+  .home-location-card {
+    align-self: start;
+    margin-top: 10px;
+    padding: 22px 24px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(45, 53, 199, 0.14);
+    border-left: 4px solid var(--gold);
+    border-radius: 4px 16px 16px 4px;
+    box-shadow: 0 14px 32px rgba(16, 21, 83, 0.08);
+  }
+  .home-location-card .detail-line {
+    display: block;
+    padding: 0;
+  }
+  .home-location-card .detail-line b {
+    display: block;
+    margin-bottom: 9px;
+    color: var(--deep);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
 }
 .eyebrow {
   color: var(--gold);
@@ -260,12 +304,14 @@ h1 {
   margin-right: 7px;
 }
 .hero-photo {
+  grid-area: photo;
   position: relative;
-  min-height: 620px;
+  min-height: 0;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
   isolation: isolate;
+  margin-top: 32px;
 }
 .hero-photo:before {
   display: none;
@@ -320,7 +366,7 @@ h1 {
 }
 .columns {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.55fr);
   gap: 54px;
   align-items: start;
 }
@@ -466,6 +512,10 @@ footer {
   }
   .hero {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "title"
+      "copy"
+      "photo";
     min-height: auto;
     padding-top: 10px;
   }
@@ -480,6 +530,7 @@ footer {
   */
   .hero-photo {
     min-height: auto;
+    margin-top: 0;
   }
   .pastors {
     width: min(108%, 620px);
@@ -496,6 +547,112 @@ footer {
   }
   .brand span {
     font-size: 0.9rem;
+  }
+}
+
+/* Compact phone homepage layout */
+@media (max-width: 620px) {
+  .hero {
+    row-gap: 14px;
+    padding-bottom: 16px;
+  }
+  .hero > h1 {
+    text-align: center;
+    font-size: clamp(2.65rem, 13vw, 3.15rem);
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+  }
+  .hero > h1 .accent {
+    display: block;
+    margin-top: 5px;
+  }
+  .subtitle {
+    margin: 18px 0 20px;
+  }
+  .schedule {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    max-width: none;
+    padding-top: 8px;
+  }
+  .timeblock {
+    min-width: 0;
+    padding: 15px 13px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(45, 53, 199, 0.14);
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(16, 21, 83, 0.07);
+  }
+  .timeblock h3 {
+    min-height: 2.4em;
+    margin-bottom: 7px;
+    font-size: 0.92rem;
+    line-height: 1.2;
+  }
+  .timeblock strong {
+    font-size: 1.5rem;
+    white-space: nowrap;
+  }
+  .icons {
+    margin-top: 9px;
+    font-size: 0.8rem;
+    line-height: 1.55;
+  }
+  .icon {
+    margin-right: 3px;
+  }
+  .live-strip {
+    margin-top: 20px;
+    padding: 14px 0 8px;
+    gap: 14px;
+  }
+  .home-live-strip .buttons,
+  .home-live-strip .live-button {
+    width: 100%;
+  }
+  .hero-photo {
+    margin-top: -4px;
+  }
+  .flow {
+    padding: 8px clamp(22px, 6vw, 82px) 26px;
+  }
+  .section-title {
+    margin: 24px 0 18px;
+    font-size: clamp(1.35rem, 6.3vw, 1.58rem);
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+  }
+  .columns {
+    gap: 16px;
+  }
+  .copy p {
+    font-size: 1rem;
+    line-height: 1.72;
+  }
+  .details.home-location-card {
+    margin-top: 2px;
+    padding: 18px 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(45, 53, 199, 0.14);
+    border-left: 4px solid var(--gold);
+    border-radius: 4px 14px 14px 4px;
+    box-shadow: 0 12px 28px rgba(16, 21, 83, 0.08);
+  }
+  .home-location-card .detail-line {
+    display: block;
+    padding: 0;
+  }
+  .home-location-card .detail-line b {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  footer {
+    padding-top: 18px;
+    padding-bottom: 20px;
   }
 }
 

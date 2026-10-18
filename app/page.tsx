@@ -6,12 +6,12 @@ export default function HomePage() {
   return (
     <>
       <section className="hero" id="join">
+        <h1>
+          Welcome to <span className="accent">Journey</span>
+        </h1>
         <div className="hero-copy">
-          <h1>
-            Welcome to <span className="accent">Journey</span>
-          </h1>
           <p className="subtitle">
-            A Christ-centered church family where faith grows, lives are
+            A Christ centered church family where faith grows, lives are
             strengthened, and people are welcomed with love as they walk with
             God.
           </p>
@@ -47,6 +47,7 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          <HomeLiveIndicator />
         </div>
         <div className="hero-photo">
           <Image
@@ -77,22 +78,13 @@ export default function HomePage() {
               with Journey Christian Ministries.
             </p>
           </div>
-          <div className="details">
+          <div className="details home-location-card">
             <div className="detail-line">
-              <b>Sunday</b>
-              <span>Worship service at 10:00 AM, in person and streamed online.</span>
-            </div>
-            <div className="detail-line">
-              <b>Wednesday</b>
-              <span>Bible Study at 7:00 PM, streamed online only.</span>
-            </div>
-            <div className="detail-line">
-              <b>Location</b>
+              <b>Visit Us</b>
               <span>{siteConfig.addressLine}.</span>
             </div>
           </div>
         </div>
-        <HomeLiveIndicator />
       </section>
     </>
   );
