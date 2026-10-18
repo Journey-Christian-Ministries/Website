@@ -80,14 +80,6 @@ export default function HomePage() {
           </div>
           <div className="details">
             <div className="detail-line">
-              <b>Sunday</b>
-              <span>Worship service at 10:00 AM, in person and streamed online.</span>
-            </div>
-            <div className="detail-line">
-              <b>Wednesday</b>
-              <span>Bible Study at 7:00 PM, streamed online only.</span>
-            </div>
-            <div className="detail-line">
               <b>Location</b>
               <span>{siteConfig.addressLine}.</span>
             </div>
