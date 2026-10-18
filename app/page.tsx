@@ -47,6 +47,7 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          <HomeLiveIndicator />
         </div>
         <div className="hero-photo">
           <Image
@@ -92,7 +93,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        <HomeLiveIndicator />
       </section>
     </>
   );
