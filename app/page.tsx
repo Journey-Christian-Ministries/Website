@@ -11,7 +11,7 @@ export default function HomePage() {
         </h1>
         <div className="hero-copy">
           <p className="subtitle">
-            A Christ-centered church family where faith grows, lives are
+            A Christ centered church family where faith grows, lives are
             strengthened, and people are welcomed with love as they walk with
             God.
           </p>
