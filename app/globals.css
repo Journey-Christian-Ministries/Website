@@ -195,11 +195,39 @@ main {
   padding-bottom: 0;
 }
 @media (min-width: 901px) {
+  .brand span {
+    max-width: none;
+    white-space: nowrap;
+    font-size: 0.96rem;
+  }
   .hero > h1 {
     white-space: nowrap;
+    text-align: center;
     font-size: clamp(4rem, 7vw, 6.4rem);
     letter-spacing: -0.035em;
     line-height: 0.92;
+  }
+  .home-location-card {
+    align-self: start;
+    margin-top: 10px;
+    padding: 22px 24px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(45, 53, 199, 0.14);
+    border-left: 4px solid var(--gold);
+    border-radius: 4px 16px 16px 4px;
+    box-shadow: 0 14px 32px rgba(16, 21, 83, 0.08);
+  }
+  .home-location-card .detail-line {
+    display: block;
+    padding: 0;
+  }
+  .home-location-card .detail-line b {
+    display: block;
+    margin-bottom: 9px;
+    color: var(--deep);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 }
 .eyebrow {
@@ -283,7 +311,7 @@ h1 {
   align-items: flex-start;
   justify-content: center;
   isolation: isolate;
-  margin-top: -18px;
+  margin-top: 32px;
 }
 .hero-photo:before {
   display: none;
