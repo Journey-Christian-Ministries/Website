@@ -6,10 +6,10 @@ export default function HomePage() {
   return (
     <>
       <section className="hero" id="join">
+        <h1>
+          Welcome to <span className="accent">Journey</span>
+        </h1>
         <div className="hero-copy">
-          <h1>
-            Welcome to <span className="accent">Journey</span>
-          </h1>
           <p className="subtitle">
             A Christ-centered church family where faith grows, lives are
             strengthened, and people are welcomed with love as they walk with
